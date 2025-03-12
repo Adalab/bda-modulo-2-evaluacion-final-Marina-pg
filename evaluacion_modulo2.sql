@@ -103,7 +103,7 @@ WHERE release_year BETWEEN 2005 AND 2010;
 -- 17.Encuentra el título de todas las películas que son de la misma categoría que "Family".
 SELECT f.title
 FROM film AS f
-LEFT JOIN film_category AS fc
+INNER JOIN film_category AS fc
 USING (film_id)
 LEFT JOIN category AS c
 USING (category_id) 
@@ -134,3 +134,57 @@ USING (category_id)
 INNER JOIN film AS f
 USING (film_id)
 GROUP BY name;
+
+/*21.Encuentra los actores que han actuado en al menos 5 películas y muestra el nombre del actor junto
+con la cantidad de películas en las que han actuado.*/
+SELECT a.first_name, a.last_name, COUNT(f.film_id) AS 'Cantidad películas'
+FROM actor AS a
+INNER JOIN film_actor AS f
+USING (actor_id)
+GROUP BY a.actor_id
+HAVING COUNT(f.film_id) >= 5;
+
+/*22.Encuentra el título de todas las películas que fueron alquiladas por más de 5 días. Utiliza una
+subconsulta para encontrar los rental_ids con una duración superior a 5 días y luego selecciona las
+películas correspondientes.*/
+-- rental_id superior a 5 días:
+SELECT rental_id
+FROM rental
+WHERE TIMESTAMPDIFF(DAY, rental_date, return_date) > 5;
+
+-- SOLUCIÓN:
+SELECT f.title
+FROM film AS f
+LEFT JOIN inventory AS i
+USING (film_id)
+INNER JOIN rental AS r
+USING (inventory_id)
+WHERE r.rental_id IN (SELECT rental_id
+						FROM rental
+						WHERE TIMESTAMPDIFF(DAY, rental_date, return_date) > 5);
+
+/*23.Encuentra el nombre y apellido de los actores que no han actuado en ninguna película de la categoría
+"Horror". Utiliza una subconsulta para encontrar los actores que han actuado en películas de la
+categoría "Horror" y luego exclúyelos de la lista de actores.*/
+SELECT a.first_name, a.last_name
+FROM actor AS a
+LEFT JOIN film_actor AS fa
+USING (actor_id)
+INNER JOIN film_category AS fc
+USING (film_id)
+WHERE fc.category_id NOT IN (SELECT category_id
+								FROM category
+                                WHERE name = "Horror");
+                                
+/*24.Encuentra el título de las películas que son comedias y tienen una duración mayor a 180 minutos en
+la tabla film.*/
+SELECT f.title
+FROM film AS f
+WHERE length > 180 AND film_id IN (SELECT film_id
+									FROM film_category
+                                    WHERE category_id IN (SELECT category_id
+															FROM category
+                                                            WHERE name = "Comedy"));
+                                
+
+
