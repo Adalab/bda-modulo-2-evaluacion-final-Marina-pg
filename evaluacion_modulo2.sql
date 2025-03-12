@@ -93,8 +93,44 @@ SELECT first_name, last_name
 FROM actor
 WHERE actor_id NOT IN (SELECT actor_id
 							FROM film_actor);
--- No hay ningún actor que no aparezca en ninguna película
+-- SOLUCIÓN: No hay ningún actor que no aparezca en ninguna película
 
 -- 16.Encuentra el título de todas las películas que fueron lanzadas entre el año 2005 y 2010.
 SELECT title
 FROM film
+WHERE release_year BETWEEN 2005 AND 2010;
+
+-- 17.Encuentra el título de todas las películas que son de la misma categoría que "Family".
+SELECT f.title
+FROM film AS f
+LEFT JOIN film_category AS fc
+USING (film_id)
+LEFT JOIN category AS c
+USING (category_id) 
+WHERE category_id IN (SELECT category_id
+						FROM category
+                        WHERE name = "Family");
+                        
+-- 18.Muestra el nombre y apellido de los actores que aparecen en más de 10 películas.
+SELECT a.first_name, a.last_name
+FROM actor AS a
+INNER JOIN film_actor AS f
+USING (actor_id)
+GROUP BY a.actor_id
+HAVING COUNT(f.film_id) > 10;
+
+/* 19.Encuentra el título de todas las películas que son "R" y tienen una duración mayor a 2 horas en la
+tabla film.*/
+SELECT title
+FROM film
+WHERE rating = 'R' AND length > 120;
+
+/*20.Encuentra las categorías de películas que tienen un promedio de duración superior a 120 minutos y
+muestra el nombre de la categoría junto con el promedio de duración.*/
+SELECT c.name, ROUND(AVG(f.length), 0) AS 'Promedio duración'
+FROM category AS c
+LEFT JOIN film_category AS fc
+USING (category_id)
+INNER JOIN film AS f
+USING (film_id)
+GROUP BY name;
